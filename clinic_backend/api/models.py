@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Role(models.Model):
-    name = models.CharField(max_length=50, unique=True) # Admin, Doctor, Receptionist, etc.
+    name = models.CharField(max_length=50, unique=True) # Admin, Doctor, Receptionist, LabTech, Pharmacist
 
 class Dept(models.Model):
     name = models.CharField(max_length=100)
@@ -20,11 +20,15 @@ class Specialization(models.Model):
 class Doctor(models.Model):
     staff = models.OneToOneField(Staff, on_delete=models.CASCADE)
     specialization = models.ForeignKey(Specialization, on_delete=models.SET_NULL, null=True)
+    license_number = models.CharField(max_length=50, unique=True, blank=True, null=True)
 
 class Receptionist(models.Model):
     staff = models.OneToOneField(Staff, on_delete=models.CASCADE)
 
 class LabTechnician(models.Model):
+    staff = models.OneToOneField(Staff, on_delete=models.CASCADE)
+
+class Pharmacist(models.Model):
     staff = models.OneToOneField(Staff, on_delete=models.CASCADE)
 
 class Patient(models.Model):
@@ -51,6 +55,7 @@ class Medicine(models.Model):
 
 class Prescription(models.Model):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+    pharmacist = models.ForeignKey(Pharmacist, on_delete=models.SET_NULL, null=True, blank=True)
 
 class PrescriptionItem(models.Model):
     prescription = models.ForeignKey(Prescription, on_delete=models.CASCADE)
@@ -64,8 +69,9 @@ class LabTest(models.Model):
 
 class LabOrder(models.Model):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
-    technician = models.ForeignKey(LabTechnician, on_delete=models.SET_NULL, null=True)
+    technician = models.ForeignKey(LabTechnician, on_delete=models.SET_NULL, null=True, blank=True)
     status = models.CharField(max_length=20, default='Pending')
+    created_at = models.DateTimeField(auto_now_add=True)
 
 class LabOrderItem(models.Model):
     lab_order = models.ForeignKey(LabOrder, on_delete=models.CASCADE)
