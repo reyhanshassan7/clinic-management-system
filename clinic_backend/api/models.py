@@ -32,10 +32,23 @@ class Pharmacist(models.Model):
     staff = models.OneToOneField(Staff, on_delete=models.CASCADE)
 
 class Patient(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    full_name = models.CharField(max_length=100)
     phone = models.CharField(max_length=15)
+    email = models.EmailField(blank=True, null=True)
     address = models.TextField()
     date_of_birth = models.DateField()
+    gender = models.CharField(max_length=15)
+    blood_group = models.CharField(
+        max_length=5,
+        blank=True,
+        null=True
+    )
 
 class Appointment(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
