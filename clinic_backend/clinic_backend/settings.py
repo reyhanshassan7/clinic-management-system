@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'api',
     'doctors',
     'pharmacy',
+    'receptionists',
     'rest_framework',
 ]
 

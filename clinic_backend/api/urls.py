@@ -11,4 +11,5 @@ router.register(r'prescriptions', PrescriptionViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    
 ]

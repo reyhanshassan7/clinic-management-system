@@ -2,40 +2,78 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Role(models.Model):
-    name = models.CharField(max_length=50, unique=True) # Admin, Doctor, Receptionist, LabTech, Pharmacist
+   
+    role_name = models.CharField(max_length=50, unique=True) # Admin, Doctor, Receptionist, LabTech, Pharmacist
+    is_active = models.BooleanField(default=True)
 
 class Dept(models.Model):
+    
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
 
 class Staff(models.Model):
+    
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    full_name = models.CharField(max_length=100,null=True,blank=True)
+    gender = models.CharField(max_length=10, null=True,blank=True)
+    dob = models.DateField(null=True,blank=True)
+    phone = models.CharField(max_length=15)
+    email = models.EmailField(null=True)
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True)
     dept = models.ForeignKey(Dept, on_delete=models.SET_NULL, null=True)
-    phone = models.CharField(max_length=15)
+    is_active = models.BooleanField(default=True)
 
 class Specialization(models.Model):
+
+    
     name = models.CharField(max_length=100)
 
 class Doctor(models.Model):
+    
     staff = models.OneToOneField(Staff, on_delete=models.CASCADE)
     specialization = models.ForeignKey(Specialization, on_delete=models.SET_NULL, null=True)
+    department= models.ForeignKey(Dept,on_delete=models.SET_NULL,null=True)
+    consultation_fee = models.DecimalField(max_digits=10,decimal_places=2, null=True)
+    qualification = models.CharField(max_length=100,null=True)
+    experience_years = models.IntegerField(default=0)
     license_number = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
 
 class Receptionist(models.Model):
+    
+    
     staff = models.OneToOneField(Staff, on_delete=models.CASCADE)
+    is_active = models.BooleanField(default=True)
 
 class LabTechnician(models.Model):
+   
     staff = models.OneToOneField(Staff, on_delete=models.CASCADE)
+    is_active = models.BooleanField(default=True)
 
 class Pharmacist(models.Model):
+
     staff = models.OneToOneField(Staff, on_delete=models.CASCADE)
+    is_active = models.BooleanField(default=True)
 
 class Patient(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    full_name = models.CharField(max_length=100)
     phone = models.CharField(max_length=15)
+    email = models.EmailField(blank=True, null=True)
     address = models.TextField()
     date_of_birth = models.DateField()
+    gender = models.CharField(max_length=15)
+    blood_group = models.CharField(
+        max_length=5,
+        blank=True,
+        null=True
+    )
 
 class Appointment(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
@@ -49,9 +87,13 @@ class Consultation(models.Model):
     notes = models.TextField()
 
 class Medicine(models.Model):
+    
     name = models.CharField(max_length=100)
+    manufacturer = models.CharField(max_length=100,null=True, blank=True)
     stock = models.IntegerField()
     price = models.DecimalField(max_digits=8, decimal_places=2)
+    expiry_date = models.DateField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
 
 class Prescription(models.Model):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
