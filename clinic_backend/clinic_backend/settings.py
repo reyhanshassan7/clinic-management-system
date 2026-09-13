@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'doctors',
     'receptionists',
     'rest_framework',
+    'adminmodule',
 ]
 
 MIDDLEWARE = [
