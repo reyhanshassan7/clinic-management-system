@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'pharmacy',
     'receptionists',
     'rest_framework',
+    'rest_framework.authtoken',
     'adminmodule',
 ]
 
@@ -83,7 +84,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'clinic_management_db',
         'USER': 'root',
-        'PASSWORD': '1234',
+        'PASSWORD': 'sql1234',
         'HOST': 'localhost',
         'PORT': '3306',
     }

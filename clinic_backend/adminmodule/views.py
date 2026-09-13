@@ -4,7 +4,8 @@ from django.shortcuts import render
 from rest_framework import viewsets, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
+from django.contrib.auth import authenticate
+from rest_framework.authtoken.models import Token
 from api.models import Role, Dept, Staff, Medicine, LabTest,Specialization
 from .serializers import (
     RoleSerializer, DeptSerializer, StaffSerializer,
@@ -15,26 +16,31 @@ from .serializers import (
 class RoleViewSet(viewsets.ModelViewSet):
     queryset = Role.objects.all()
     serializer_class = RoleSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class DeptViewSet(viewsets.ModelViewSet):
     queryset = Dept.objects.all()
     serializer_class = DeptSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class StaffViewSet(viewsets.ModelViewSet):
     queryset = Staff.objects.all()
     serializer_class = StaffSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class MedicineViewSet(viewsets.ModelViewSet):
     queryset = Medicine.objects.all()
     serializer_class = MedicineSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class LabTestViewSet(viewsets.ModelViewSet):
     queryset = LabTest.objects.all()
     serializer_class = LabTestSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 
@@ -42,6 +48,7 @@ class LabTestViewSet(viewsets.ModelViewSet):
 class SpecializationViewSet(viewsets.ModelViewSet):
     queryset = Specialization.objects.all()
     serializer_class = SpecializationSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class ChangePasswordView(APIView):
@@ -58,3 +65,5 @@ class ChangePasswordView(APIView):
         user.set_password(new_password)
         user.save()
         return Response({'message': 'Password changed successfully'})
+
+

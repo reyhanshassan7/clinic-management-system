@@ -16,4 +16,5 @@ router.register('specializations', SpecializationViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('change-password/', ChangePasswordView.as_view(), name='change-password'),
+   
 ]
