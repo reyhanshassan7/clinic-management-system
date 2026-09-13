@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'api',
     'doctors',
+    'pharmacy',
     'receptionists',
     'rest_framework',
     'adminmodule',
@@ -82,7 +83,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'clinic_management_db',
         'USER': 'root',
-        'PASSWORD':'sql1234',
+        'PASSWORD': '1234',
         'HOST': 'localhost',
         'PORT': '3306',
     }
