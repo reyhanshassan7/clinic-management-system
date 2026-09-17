@@ -74,6 +74,8 @@ class Patient(models.Model):
         blank=True,
         null=True
     )
+    def __str__(self):
+     return self.full_name
 
 class Appointment(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
