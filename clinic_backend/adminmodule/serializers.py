@@ -71,6 +71,11 @@ class StaffSerializer(serializers.ModelSerializer):
     specialization = serializers.PrimaryKeyRelatedField(
         queryset=Specialization.objects.all(), write_only=True, required=False
     )
+    department = serializers.PrimaryKeyRelatedField(
+        queryset=Dept.objects.all(),
+        write_only=True,
+        required=False
+    )
     consultation_fee = serializers.DecimalField(
         max_digits=10, decimal_places=2, write_only=True, required=False
     )
@@ -90,9 +95,9 @@ class StaffSerializer(serializers.ModelSerializer):
             'phone',
             'email',
             'role',
-            'dept',
             'is_active',
             'specialization',
+            'department',
             'consultation_fee',
             'qualification',
             'experience_years',
@@ -207,13 +212,7 @@ class StaffSerializer(serializers.ModelSerializer):
 
         return value
 
-    def validate_dept(self, value):
-        if not value.is_active:
-            raise serializers.ValidationError(
-                "Cannot assign an inactive department."
-            )
-
-        return value
+   
 
     # ---------- NEW: whole-object check ----------
     # Role "Doctor" nu select panninaa, doctor fields kandippa venum
@@ -255,7 +254,6 @@ class StaffSerializer(serializers.ModelSerializer):
             Doctor.objects.create(
                 staff=staff,
                 specialization=specialization,
-                department=staff.dept,
                 consultation_fee=consultation_fee,
                 qualification=qualification,
                 experience_years=experience_years or 0,

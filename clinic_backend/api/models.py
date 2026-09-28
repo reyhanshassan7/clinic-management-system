@@ -26,7 +26,6 @@ class Staff(models.Model):
     phone = models.CharField(max_length=15)
     email = models.EmailField(null=True)
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True)
-    dept = models.ForeignKey(Dept, on_delete=models.SET_NULL, null=True)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
