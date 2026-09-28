@@ -10,3 +10,11 @@ class MedicineDispense(models.Model):
 
     def __str__(self):
         return f"{self.prescription_item.medicine.name} x{self.quantity_dispensed}"
+
+
+class MedicineDispenseProxy(MedicineDispense):
+    class Meta:
+        proxy = True
+        app_label = 'api'
+        verbose_name = 'Medicine dispense'
+        verbose_name_plural = 'Medicine dispenses'
