@@ -5,12 +5,17 @@ class Role(models.Model):
    
     role_name = models.CharField(max_length=50, unique=True) # Admin, Doctor, Receptionist, LabTech, Pharmacist
     is_active = models.BooleanField(default=True)
+    def __str__(self):
+        return self.role_name
 
 class Dept(models.Model):
     
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
 
 class Staff(models.Model):
     
@@ -24,10 +29,16 @@ class Staff(models.Model):
     dept = models.ForeignKey(Dept, on_delete=models.SET_NULL, null=True)
     is_active = models.BooleanField(default=True)
 
+    def __str__(self):
+        return self.full_name
+
 class Specialization(models.Model):
 
     
     name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
 
 class Doctor(models.Model):
     
@@ -39,6 +50,11 @@ class Doctor(models.Model):
     experience_years = models.IntegerField(default=0)
     license_number = models.CharField(max_length=50, unique=True, blank=True, null=True)
     is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+            return self.staff.full_nameS
+
+    
 
 class Receptionist(models.Model):
     
@@ -97,6 +113,9 @@ class Medicine(models.Model):
     expiry_date = models.DateField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
 
+    def __str__(self):
+        return self.name
+
 class Prescription(models.Model):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     pharmacist = models.ForeignKey(Pharmacist, on_delete=models.SET_NULL, null=True, blank=True)
@@ -111,6 +130,9 @@ class LabTest(models.Model):
     name = models.CharField(max_length=100)
     cost = models.DecimalField(max_digits=8, decimal_places=2)
 
+    def __str__(self):
+        return self.name
+    
 class LabOrder(models.Model):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     technician = models.ForeignKey(LabTechnician, on_delete=models.SET_NULL, null=True, blank=True)
