@@ -1,5 +1,5 @@
 from django.db import transaction
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, permissions
 from rest_framework.response import Response
 
 from api.models import Medicine, PrescriptionItem
@@ -10,6 +10,7 @@ from .serializers import MedicineSerializer, MedicineDispenseSerializer, Prescri
 class MedicineViewSet(viewsets.ModelViewSet):
     queryset = Medicine.objects.all()
     serializer_class = MedicineSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class PrescriptionItemViewSet(viewsets.ReadOnlyModelViewSet):

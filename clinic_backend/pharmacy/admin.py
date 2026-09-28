@@ -1,4 +1,4 @@
 from django.contrib import admin
-from .models import MedicineDispense
+from .models import MedicineDispenseProxy
 
-admin.site.register(MedicineDispense)
+admin.site.register(MedicineDispenseProxy)
