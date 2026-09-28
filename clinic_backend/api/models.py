@@ -122,6 +122,20 @@ class LabOrderItem(models.Model):
     lab_test = models.ForeignKey(LabTest, on_delete=models.CASCADE)
     result = models.TextField(blank=True, null=True)
 
+class LabBill(models.Model):
+    lab_order = models.OneToOneField(
+        LabOrder,
+        on_delete=models.CASCADE
+    )
+    total_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Lab Bill #{self.id}"
+
 class MedicalReport(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
