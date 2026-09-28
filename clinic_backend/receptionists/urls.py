@@ -2,38 +2,57 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from .views import (
+    ReceptionistLoginView,
     PatientViewSet,
+    DoctorViewSet,
     ReceptionistAppointmentViewSet,
     BillViewSet,
     PaymentViewSet,
 )
 
+
 router = DefaultRouter()
 
 router.register(
-    'patients',
+    r'patients',
     PatientViewSet,
-    basename='patient'
+    basename='receptionist-patient'
 )
 
 router.register(
-    'appointments',
+    r'doctors',
+    DoctorViewSet,
+    basename='receptionist-doctor'
+)
+
+router.register(
+    r'appointments',
     ReceptionistAppointmentViewSet,
     basename='receptionist-appointment'
 )
 
 router.register(
-    'bills',
+    r'bills',
     BillViewSet,
-    basename='bill'
+    basename='receptionist-bill'
 )
 
 router.register(
-    'payments',
+    r'payments',
     PaymentViewSet,
-    basename='payment'
+    basename='receptionist-payment'
 )
 
+
 urlpatterns = [
-    path('', include(router.urls)),
+    path(
+        'login/',
+        ReceptionistLoginView.as_view(),
+        name='receptionist-login'
+    ),
+
+    path(
+        '',
+        include(router.urls)
+    ),
 ]
