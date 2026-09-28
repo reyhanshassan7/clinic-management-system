@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     RoleViewSet, DeptViewSet, StaffViewSet,
-    MedicineViewSet, LabTestViewSet, ChangePasswordView,SpecializationViewSet
+    MedicineViewSet, LabTestViewSet, ChangePasswordView,SpecializationViewSet,AdminLoginViewSet
 )
 
 router = DefaultRouter()
@@ -16,5 +16,6 @@ router.register('specializations', SpecializationViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('change-password/', ChangePasswordView.as_view(), name='change-password'),
+    path('login/', AdminLoginViewSet.as_view(), name='admin-login'),
    
 ]

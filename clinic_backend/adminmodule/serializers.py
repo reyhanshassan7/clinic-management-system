@@ -273,17 +273,60 @@ class StaffSerializer(serializers.ModelSerializer):
             instance.user.set_password(password)
             instance.user.save()
 
-        for attr in ['specialization', 'consultation_fee', 'qualification',
-                     'experience_years', 'license_number']:
-            validated_data.pop(attr, None)
+        specialization = validated_data.pop('specialization', None)
+        consultation_fee = validated_data.pop('consultation_fee', None)
+        qualification = validated_data.pop('qualification', None)
+        experience_years = validated_data.pop('experience_years', None)
+        license_number = validated_data.pop('license_number', None)
+
+        old_role = instance.role
+        new_role = validated_data.get('role', instance.role)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
         instance.save()
 
-        return instance
+    # Doctor -> another role
+        if old_role and old_role.role_name == 'Doctor':
+            if not new_role or new_role.role_name != 'Doctor':
+                Doctor.objects.filter(staff=instance).delete()
 
+    # Create or update Doctor details
+        if new_role and new_role.role_name == 'Doctor':
+
+            doctor, created = Doctor.objects.get_or_create(
+            staff=instance,
+            defaults={
+                'specialization': specialization,
+                'department': instance.dept,
+                'consultation_fee': consultation_fee,
+                'qualification': qualification,
+                'experience_years': experience_years or 0,
+                'license_number': license_number,
+            }
+        )
+
+            if not created:
+                if specialization is not None:
+                    doctor.specialization = specialization
+
+                if consultation_fee is not None:
+                    doctor.consultation_fee = consultation_fee
+
+                if qualification is not None:
+                    doctor.qualification = qualification
+
+                if experience_years is not None:
+                    doctor.experience_years = experience_years
+
+                if license_number is not None:
+                    doctor.license_number = license_number
+
+                doctor.department = instance.dept
+                doctor.save()
+
+        return instance
 #--------------SPECIALIZATION---------------
 
 
