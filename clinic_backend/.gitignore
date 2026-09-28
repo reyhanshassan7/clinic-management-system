@@ -4,4 +4,5 @@ __pycache__/
 *.pyd
 .venv/
 myvirtualenv/
-.env
+.env__pycache__/
+*.pyc
