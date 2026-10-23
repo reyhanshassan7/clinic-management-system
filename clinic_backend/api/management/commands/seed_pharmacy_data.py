@@ -39,8 +39,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # --- Roles & Dept ---
-        pharmacist_role, _ = Role.objects.get_or_create(name="Pharmacist")
-        doctor_role, _ = Role.objects.get_or_create(name="Doctor")
+        pharmacist_role, _ = Role.objects.get_or_create(role_name="Pharmacist")
+        doctor_role, _ = Role.objects.get_or_create(role_name="Doctor")
         pharmacy_dept, _ = Dept.objects.get_or_create(
             name="Pharmacy", defaults={"description": "Pharmacy department"}
         )
