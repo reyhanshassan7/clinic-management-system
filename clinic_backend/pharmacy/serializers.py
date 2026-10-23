@@ -2,7 +2,7 @@ from django.db.models import Sum
 from django.utils import timezone
 from rest_framework import serializers
 
-from api.models import Medicine, PrescriptionItem
+from api.models import Medicine, Prescription, PrescriptionItem
 from .models import MedicineDispense
 
 
@@ -41,7 +41,8 @@ class MedicineDispenseSerializer(serializers.ModelSerializer):
     class Meta:
         model = MedicineDispense
         fields = '__all__'
-        read_only_fields = ['dispensed_at']
+        # pharmacist is set by the view from the logged-in user, never from the request body
+        read_only_fields = ['pharmacist', 'dispensed_at']
 
     def validate(self, data):
         item = data['prescription_item']
@@ -51,6 +52,11 @@ class MedicineDispenseSerializer(serializers.ModelSerializer):
         if qty <= 0:
             raise serializers.ValidationError(
                 {"quantity_dispensed": "Quantity dispensed must be greater than zero."}
+            )
+
+        if not medicine.is_active:
+            raise serializers.ValidationError(
+                {"prescription_item": f"{medicine.name} is inactive."}
             )
 
         if medicine.expiry_date and medicine.expiry_date < timezone.now().date():
@@ -73,3 +79,14 @@ class MedicineDispenseSerializer(serializers.ModelSerializer):
             )
 
         return data
+
+
+class PharmacyPrescriptionSerializer(serializers.ModelSerializer):
+    patient_name = serializers.CharField(
+        source='consultation.appointment.patient.full_name', read_only=True)
+    items = PrescriptionItemSerializer(
+        source='prescriptionitem_set', many=True, read_only=True)
+
+    class Meta:
+        model = Prescription
+        fields = ['id', 'consultation', 'patient_name', 'pharmacist', 'items']
