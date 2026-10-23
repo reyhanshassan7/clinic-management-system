@@ -1,18 +1,22 @@
 from django.contrib.auth import authenticate
 from django.db import transaction
 from django.db.models import Sum
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import viewsets, mixins
 from rest_framework.authtoken.models import Token
+from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.models import Medicine, Prescription, PrescriptionItem, Staff
-from .models import MedicineDispense
-from .permissions import IsPharmacist, IsAdminOrPharmacist
+from .models import MedicineDispense, StockRequest
+from .permissions import IsPharmacist, IsAdminOrPharmacist, IsAdmin
 from .serializers import (
-    MedicineSerializer, MedicineDispenseSerializer,
-    PrescriptionItemSerializer, PharmacyPrescriptionSerializer,
+    MedicineSerializer, MedicineDispenseSerializer, PrescriptionItemSerializer,
+    PharmacyPrescriptionSerializer, StockRequestSerializer,
 )
 
 
@@ -104,3 +108,75 @@ class MedicineDispenseViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
             ).update(pharmacist=pharmacist)
 
         return Response(serializer.data, status=201)
+
+class StockRequestViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
+                          mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    """Pharmacist: ask the admin for more stock and see own requests."""
+    serializer_class = StockRequestSerializer
+    permission_classes = [IsPharmacist]
+
+    def get_queryset(self):
+        return (StockRequest.objects
+                .filter(requested_by=self.request.user.staff.pharmacist)
+                .select_related('medicine').order_by('-id'))
+
+    def perform_create(self, serializer):
+        medicine = serializer.validated_data['medicine']
+        with transaction.atomic():
+            # lock so a double click can't create two pending requests
+            Medicine.objects.select_for_update().get(pk=medicine.pk)
+            if StockRequest.objects.filter(medicine=medicine, status='Pending').exists():
+                raise ValidationError({'medicine': 'A pending request already exists.'})
+            serializer.save(requested_by=self.request.user.staff.pharmacist)
+
+
+class AdminStockRequestViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
+                               viewsets.GenericViewSet):
+    """Admin: receive stock by approving, or reject a request."""
+    serializer_class = StockRequestSerializer
+    permission_classes = [IsAdmin]
+
+    def get_queryset(self):
+        qs = StockRequest.objects.select_related('medicine').order_by('-id')
+        status_param = self.request.query_params.get('status')
+        return qs.filter(status=status_param) if status_param else qs
+
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        try:
+            qty = int(request.data.get('approved_quantity') or 0)
+        except (TypeError, ValueError):
+            return Response({'error': 'approved_quantity must be a number'}, status=400)
+
+        with transaction.atomic():
+            sr = get_object_or_404(StockRequest.objects.select_for_update(), pk=pk)
+            if sr.status != 'Pending':
+                return Response({'error': 'Request already resolved'}, status=400)
+            qty = qty or sr.quantity          # default: approve what was asked
+            if qty <= 0:
+                return Response({'error': 'Quantity must be greater than zero'}, status=400)
+
+            medicine = Medicine.objects.select_for_update().get(pk=sr.medicine_id)
+            medicine.stock += qty
+            medicine.save(update_fields=['stock'])
+
+            sr.status = 'Approved'
+            sr.approved_quantity = qty
+            sr.remarks = request.data.get('remarks', '')
+            sr.resolved_at = timezone.now()
+            sr.resolved_by = request.user.staff
+            sr.save()
+        return Response(self.get_serializer(sr).data)
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        with transaction.atomic():
+            sr = get_object_or_404(StockRequest.objects.select_for_update(), pk=pk)
+            if sr.status != 'Pending':
+                return Response({'error': 'Request already resolved'}, status=400)
+            sr.status = 'Rejected'
+            sr.remarks = request.data.get('remarks', '')
+            sr.resolved_at = timezone.now()
+            sr.resolved_by = request.user.staff
+            sr.save()
+        return Response(self.get_serializer(sr).data)

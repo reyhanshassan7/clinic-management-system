@@ -3,7 +3,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from api.models import Medicine, Prescription, PrescriptionItem
-from .models import MedicineDispense
+from .models import MedicineDispense, StockRequest
 
 
 class MedicineSerializer(serializers.ModelSerializer):
@@ -90,3 +90,34 @@ class PharmacyPrescriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prescription
         fields = ['id', 'consultation', 'patient_name', 'pharmacist', 'items']
+
+
+LOW_STOCK_THRESHOLD = 10   # agree this number with your team
+
+
+class StockRequestSerializer(serializers.ModelSerializer):
+    medicine_name = serializers.CharField(source='medicine.name', read_only=True)
+    current_stock = serializers.IntegerField(source='medicine.stock', read_only=True)
+
+    class Meta:
+        model = StockRequest
+        fields = ['id', 'medicine', 'medicine_name', 'current_stock', 'quantity',
+                  'approved_quantity', 'status', 'remarks', 'requested_by',
+                  'created_at', 'resolved_at']
+        read_only_fields = ['approved_quantity', 'status', 'remarks', 'requested_by',
+                            'created_at', 'resolved_at']
+
+    def validate_quantity(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Quantity must be greater than zero.")
+        return value
+
+    def validate_medicine(self, medicine):
+        if not medicine.is_active:
+            raise serializers.ValidationError("This medicine is inactive.")
+        if medicine.stock > LOW_STOCK_THRESHOLD:
+            raise serializers.ValidationError(
+                f"Stock is {medicine.stock}; requests are allowed only at {LOW_STOCK_THRESHOLD} or below.")
+        if StockRequest.objects.filter(medicine=medicine, status='Pending').exists():
+            raise serializers.ValidationError("A pending request already exists for this medicine.")
+        return medicine

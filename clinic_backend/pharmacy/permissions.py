@@ -22,3 +22,6 @@ class IsPharmacist(HasStaffRole):
 
 class IsAdminOrPharmacist(HasStaffRole):
     allowed_roles = ('Admin', 'Pharmacist')
+
+class IsAdmin(HasStaffRole):
+    allowed_roles = ('Admin',)
